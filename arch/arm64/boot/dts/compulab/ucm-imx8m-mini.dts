@@ -14,12 +14,11 @@
 
 /dts-v1/;
 
-#include "../freescale/imx8mm.dtsi"
-#include "../freescale/imx8mm-pinfunc.h"
-#include "sb-ucm-imx8-rev2.dtsi"
 #include "ucm-imx8m-mini.dtsi"
+#include "sb-ucm-imx8-rev2.dtsi"
+#include "wifi-lwb5.dtsi"
 
 / {
-	model = "CompuLab UCM i.MX8MM board Kernel";
+	model = "CompuLab UCM i.MX8MM board";
 	compatible = "cpl,ucm-imx8m-mini", "fsl,imx8mm";
 };
