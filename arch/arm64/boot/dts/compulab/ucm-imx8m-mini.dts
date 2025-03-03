@@ -1,0 +1,25 @@
+/*
+ * Copyright 2018 CompuLab
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+
+#include "../freescale/imx8mm.dtsi"
+#include "../freescale/imx8mm-pinfunc.h"
+#include "sb-ucm-imx8-rev2.dtsi"
+#include "ucm-imx8m-mini.dtsi"
+
+/ {
+	model = "CompuLab UCM i.MX8MM board Kernel";
+	compatible = "cpl,ucm-imx8m-mini", "fsl,imx8mm";
+};
