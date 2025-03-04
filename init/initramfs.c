@@ -238,14 +238,17 @@ static __initdata char *collect;
 
 static void __init read_into(char *buf, unsigned size, enum state next)
 {
+    printk(KERN_INFO "read_into: enter, buf=%p, size=%u, next=%d\n", buf, size, next);
 	if (byte_count >= size) {
 		collected = victim;
 		eat(size);
+		printk(KERN_INFO "read_into: setting state to next=%d\n", next);
 		state = next;
 	} else {
 		collect = collected = buf;
 		remains = size;
 		next_state = next;
+		printk(KERN_INFO "read_into: set state to Collect, next_state=%d, remains=%lu\n", next_state, remains);
 		state = Collect;
 	}
 }
@@ -261,13 +264,19 @@ static int __init do_start(void)
 static int __init do_collect(void)
 {
 	unsigned long n = remains;
-	if (byte_count < n)
+	printk(KERN_INFO "do_collect: enter, remains=%lu, byte_count=%lu\n", remains, byte_count);
+	if (byte_count < n){
 		n = byte_count;
+	}
 	memcpy(collect, victim, n);
 	eat(n);
 	collect += n;
-	if ((remains -= n) != 0)
+	if ((remains -= n) != 0) {
+	    printk(KERN_INFO "do_collect: returning 1\n");
 		return 1;
+	}
+
+	printk(KERN_INFO "do_collect: setting state to %d\n", next_state);
 	state = next_state;
 	return 0;
 }
@@ -321,8 +330,10 @@ static int __init do_reset(void)
 {
 	while (byte_count && *victim == '\0')
 		eat(1);
-	if (byte_count && (this_header & 3))
+	if (byte_count && (this_header & 3)) {
+	    printk(KERN_INFO "do_reset: broken padding\n");
 		error("broken padding");
+	}
 	return 1;
 }
 
@@ -448,8 +459,10 @@ static long __init write_buffer(char *buf, unsigned long len)
 	byte_count = len;
 	victim = buf;
 
+    printk(KERN_INFO "write_buffer: enter, state=%d, buf=%p, len=%lu\n", state, buf, len);
 	while (!actions[state]())
 		;
+	printk(KERN_INFO "write_buffer: returning %lu\n", len - byte_count);
 	return len - byte_count;
 }
 
@@ -458,21 +471,30 @@ static long __init flush_buffer(void *bufv, unsigned long len)
 	char *buf = bufv;
 	long written;
 	long origLen = len;
-	if (message)
+	printk(KERN_INFO "flush_buffer: enter, len=%lu\n", len);
+	if (message) {
+	    printk(KERN_INFO "flush_buffer: message not null, returning -1\n");
 		return -1;
+	}
 	while ((written = write_buffer(buf, len)) < len && !message) {
 		char c = buf[written];
+		printk(KERN_INFO "flush_buffer: written=%ld, c=%c\n", written, c);
 		if (c == '0') {
 			buf += written;
 			len -= written;
+			printk(KERN_INFO "flush_buffer: setting state to Start\n");
 			state = Start;
 		} else if (c == 0) {
 			buf += written;
 			len -= written;
+			printk(KERN_INFO "flush_buffer: setting state to Reset\n");
 			state = Reset;
-		} else
+		} else{
+		    printk(KERN_INFO "flush_buffer: junk within compressed archive\n");
 			error("junk within compressed archive");
+		}
 	}
+	printk(KERN_INFO "flush_buffer: returning %lu\n", origLen);
 	return origLen;
 }
 
@@ -487,6 +509,7 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 	const char *compress_name;
 	static __initdata char msg_buf[64];
 
+    printk(KERN_INFO "unpack_to_rootfs: enter, buf=%p, len=%lu\n", buf, len);
 	header_buf = kmalloc(110, GFP_KERNEL);
 	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
 	name_buf = kmalloc(N_ALIGN(PATH_MAX), GFP_KERNEL);
@@ -497,7 +520,9 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 	state = Start;
 	this_header = 0;
 	message = NULL;
+	printk(KERN_INFO "unpack_to_rootfs: starting decompress\n");
 	while (!message && len) {
+	    printk(KERN_INFO "unpack_to_rootfs: starting iteration\n");
 		loff_t saved_offset = this_header;
 		if (*buf == '0' && !(this_header & 3)) {
 			state = Start;
@@ -513,19 +538,29 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 			continue;
 		}
 		this_header = 0;
+		printk(KERN_INFO "unpack_to_rootfs: calling decompress_method\n");
 		decompress = decompress_method(buf, len, &compress_name);
 		pr_debug("Detected %s compressed data\n", compress_name);
 		if (decompress) {
+		    printk(KERN_INFO "unpack_to_rootfs: decompress method for %s found, calling decompress()\n", compress_name);
+		    printk(KERN_INFO "unpack_to_rootfs: len=%lu\n", len);
 			int res = decompress(buf, len, NULL, flush_buffer, NULL,
 				   &my_inptr, error);
-			if (res)
+			if (res) {
 				error("decompressor failed");
+			} else {
+			    printk(KERN_INFO "unpack_to_rootfs: decompressor succeeded\n");
+			}
 		} else if (compress_name) {
+		    printk(KERN_INFO "unpack_to_rootfs: compress_name=%s\n", compress_name);
 			if (!message) {
+			    printk(KERN_INFO "unpack_to_rootfs: compression method %s not configured\n", compress_name);
 				snprintf(msg_buf, sizeof msg_buf,
 					 "compression method %s not configured",
 					 compress_name);
 				message = msg_buf;
+			} else {
+			    printk(KERN_INFO "unpack_to_rootfs: compression method %s is configured, doing nothing\n", compress_name);
 			}
 		} else
 			error("invalid magic at start of compressed archive");
@@ -535,10 +570,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 		buf += my_inptr;
 		len -= my_inptr;
 	}
+	printk(KERN_INFO "unpack_to_rootfs: after decompression loop\n");
 	dir_utime();
 	kfree(name_buf);
 	kfree(symlink_buf);
 	kfree(header_buf);
+	printk(KERN_INFO "unpack_to_rootfs: done\n");
 	return message;
 }
 
@@ -708,6 +745,8 @@ static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 #else
 		printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
 #endif
+	} else {
+	    printk(KERN_INFO "Unpacking rootfs image as initramfs: done\n");
 	}
 
 done:
@@ -722,6 +761,7 @@ done:
 
 	flush_delayed_fput();
 	task_work_run();
+	printk(KERN_INFO "do_populate_rootfs: exit\n");
 }
 
 static ASYNC_DOMAIN_EXCLUSIVE(initramfs_domain);
