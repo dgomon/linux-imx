@@ -23,79 +23,6 @@
 		stdout-patch = &uart3;
 	};
 
-	firmware {
-		android {
-			compatible = "android,firmware";
-			/* default emmc node used for GSI */
-			boot_devices = "soc@0/soc@0:bus@30800000/30b60000.mmc";
-			/* sd card node which used if androidboot.boot_device_root=mmcblk1 */
-			boot_devices_mmcblk1 = "soc@0/soc@0:bus@30800000/30b50000.mmc";
-			/* emmc node which used if androidboot.boot_device_root=mmcblk2 */
-			boot_devices_mmcblk2 = "soc@0/soc@0:bus@30800000/30b60000.mmc";
-			fstab {
-				compatible = "android,fstab";
-				system {
-					compatible = "android,system";
-					dev = "system";
-					type = "ext4";
-					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,avb_keys=/avb/q-gsi.avbpubkey:/avb/r-gsi.avbpubkey:/avb/s-gsi.avbpubkey,logical,first_stage_mount";
-				};
-				vendor {
-					compatible = "android,vendor";
-					dev = "vendor";
-					type = "ext4";
-					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
-				};
-				product {
-					compatible = "android,product";
-					dev = "product";
-					type = "ext4";
-					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
-				};
-				metadata {
-					compatible = "android,metadata";
-					dev = "/dev/block/by-name/metadata";
-					type = "ext4";
-					mnt_flags = "noatime,nosuid,nodev,discard,sync";
-					fsmgr_flags = "wait,formattable,first_stage_mount";
-				};
-			};
-			vbmeta {
-				/*we need use FirstStageMountVBootV2 if we enable avb*/
-				compatible = "android,vbmeta";
-				/*parts means the partition witch can be mount in first stage*/
-				parts = "vbmeta,dtbo,boot,system,vendor,product";
-			};
-		};
-	};
-
-	trusty {
-		compatible = "android,trusty-smc-v1";
-		ranges;
-		#address-cells = <2>;
-		#size-cells = <2>;
-		trusty-irq {
-			compatible = "android,trusty-irq-v1";
-			interrupt-templates = <&trusty_ipi 0>;
-			interrupt-ranges = < 0 15 0>;
-		};
-		trusty-virtio {
-			compatible = "android,trusty-virtio-v1";
-		};
-		trusty-log {
-			compatible = "android,trusty-log-v1";
-		};
-	};
-
-	trusty_ipi: interrupt-controller@0 {
-		compatible = "android,CustomIPI";
-		interrupt-controller;
-		#interrupt-cells = <1>;
-	};
-
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
@@ -112,10 +39,6 @@
 		compatible = "pmem-region";
 		reg = <0 0xb8500000 0 0x00010000>;
 		volatile;
-	};
-
-	soc@0 {
-		dma-ranges = <0x40000000 0x0 0x40000000 0xc0000000>;
 	};
 
 	reserved-memory {
@@ -869,3 +792,5 @@
 &cpu_crit0 {
 	temperature = <115000>;
 };
+
+#include "../freescale/imx8mm-android.dtsi"
