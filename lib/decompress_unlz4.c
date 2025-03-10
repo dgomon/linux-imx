@@ -41,76 +41,55 @@ STATIC inline int INIT unlz4(u8 *input, long in_len,
 	u8 *inp_start;
 	u8 *outp;
 	long size = in_len;
-	printk(KERN_INFO "unlz4: enter. input=%p, in_len=%ld, output=%p\n", input, in_len, output);
 #ifdef PREBOOT
 	size_t out_len = get_unaligned_le32(input + in_len);
-	printk(KERN_INFO "unlz4: PREBOOT defined, out_len=%d\n", out_len);
 #endif
 	size_t dest_len;
 
+
 	if (output) {
-	    printk(KERN_INFO "unlz4: output not null\n");
 		outp = output;
 	} else if (!flush) {
 		error("NULL output pointer and no flush function provided");
 		goto exit_0;
 	} else {
-	    printk(KERN_INFO "unlz4: output is null, calling large_malloc\n");
 		outp = large_malloc(uncomp_chunksize);
 		if (!outp) {
-		    printk(KERN_INFO "unlz4: output is null, large_malloc failed\n");
 			error("Could not allocate output buffer");
 			goto exit_0;
-		} else {
-		    printk(KERN_INFO "unlz4: output is null, large_malloc succeeded\n");
 		}
 	}
 
 	if (input && fill) {
-	    printk(KERN_INFO "unlz4: Both input pointer and fill function provided\n");
 		error("Both input pointer and fill function provided,");
 		goto exit_1;
 	} else if (input) {
-	    printk(KERN_INFO "unlz4: input is provided\n");
 		inp = input;
 	} else if (!fill) {
-	    printk(KERN_INFO "unlz4: NULL input pointer and missing fill function\n");
 		error("NULL input pointer and missing fill function");
 		goto exit_1;
 	} else {
-	    printk(KERN_INFO "unlz4: invoking large_malloc\n");
 		inp = large_malloc(LZ4_compressBound(uncomp_chunksize));
 		if (!inp) {
-		    printk(KERN_INFO "unlz4: Could not allocate input buffer\n");
 			error("Could not allocate input buffer");
 			goto exit_1;
-		} else {
-		    printk(KERN_INFO "unlz4: allocated input buffer\n");
 		}
 	}
 	inp_start = inp;
 
-	if (posp) {
-	    printk(KERN_INFO "unlz4: posp is not null, nullifying\n");
+	if (posp)
 		*posp = 0;
-	}
 
 	if (fill) {
-	    printk(KERN_INFO "unlz4: calling fill\n");
 		size = fill(inp, 4);
 		if (size < 4) {
-		    printk(KERN_INFO "unlz4: data corrupted\n");
 			error("data corrupted");
 			goto exit_2;
-		} else {
-		    printk(KERN_INFO "unlz4: data is not corrupted\n");
 		}
 	}
 
 	chunksize = get_unaligned_le32(inp);
-	printk(KERN_INFO "unlz4: chunksize=%zu\n", chunksize);
 	if (chunksize == ARCHIVE_MAGICNUMBER) {
-	    printk(KERN_INFO "unlz4: chunksize=ARCHIVE_MAGICNUMBER\n");
 		if (!fill) {
 			inp += 4;
 			size -= 4;
@@ -123,30 +102,22 @@ STATIC inline int INIT unlz4(u8 *input, long in_len,
 	if (posp)
 		*posp += 4;
 
-    printk(KERN_INFO "unlz4: entering loop\n");
 	for (;;) {
-        printk(KERN_INFO "unlz4: starting iteration\n");
+
 		if (fill) {
-		    printk(KERN_INFO "unlz4: filling\n");
 			size = fill(inp, 4);
-			printk(KERN_INFO "unlz4: size=%ld\n", size);
-			if (size == 0) {
-			    printk(KERN_INFO "unlz4: size is 0, breaking\n");
+			if (size == 0)
 				break;
-			}
 			if (size < 4) {
 				error("data corrupted");
-				printk(KERN_INFO "unlz4: size is smaller than 4, data corrupted\n");
 				goto exit_2;
 			}
 		} else if (size < 4) {
 			/* empty or end-of-file */
-			printk(KERN_INFO "unlz4: empty or end-of-file\n");
 			goto exit_3;
 		}
 
 		chunksize = get_unaligned_le32(inp);
-		printk(KERN_INFO "unlz4: chunksize=%zu\n", chunksize);
 		if (chunksize == ARCHIVE_MAGICNUMBER) {
 			if (!fill) {
 				inp += 4;
@@ -154,25 +125,20 @@ STATIC inline int INIT unlz4(u8 *input, long in_len,
 			}
 			if (posp)
 				*posp += 4;
-			printk(KERN_INFO "unlz4: calling continue\n");
 			continue;
 		}
 
 		if (!fill && chunksize == 0) {
 			/* empty or end-of-file */
-			printk(KERN_INFO "unlz4: going to exit_3\n");
 			goto exit_3;
 		}
 
-		if (posp) {
-		    printk(KERN_INFO "unlz4: increasing posp\n");
+		if (posp)
 			*posp += 4;
-		}
 
 		if (!fill) {
 			inp += 4;
 			size -= 4;
-			printk(KERN_INFO "unlz4: increasing inp, decreasing size\n");
 		} else {
 			if (chunksize > LZ4_compressBound(uncomp_chunksize)) {
 				error("chunk length is longer than allocated");
@@ -185,97 +151,55 @@ STATIC inline int INIT unlz4(u8 *input, long in_len,
 			}
 		}
 #ifdef PREBOOT
-        printk(KERN_INFO "unlz4: PREBOOT defined\n");
 		if (out_len >= uncomp_chunksize) {
 			dest_len = uncomp_chunksize;
 			out_len -= dest_len;
 		} else
 			dest_len = out_len;
 
-        printk(KERN_INFO "unlz4: calling LZ4_decompress_fast\n");
 		ret = LZ4_decompress_fast(inp, outp, dest_len);
-		printk(KERN_INFO "unlz4: LZ4_decompress_fast returned %d\n", ret);
 		chunksize = ret;
 #else
-        printk(KERN_INFO "unlz4: PREBOOT is not defined\n");
 		dest_len = uncomp_chunksize;
 
-        printk(KERN_INFO "unlz4: calling LZ4_decompress_safe\n");
 		ret = LZ4_decompress_safe(inp, outp, chunksize, dest_len);
-		printk(KERN_INFO "unlz4: LZ4_decompress_safe returned %d\n", ret);
 		dest_len = ret;
 #endif
 		if (ret < 0) {
 			error("Decoding failed");
 			goto exit_2;
-		} else {
-		    printk(KERN_INFO "unlz4: decoding succeeded\n");
 		}
 
 		ret = -1;
-		if (flush) {
-		    printk(KERN_INFO "unlz4: flush is not null\n");
-		} else {
-		    printk(KERN_INFO "unlz4: flush is null\n");
-		}
-
-		if (flush && flush(outp, dest_len) != dest_len) {
-		    printk(KERN_INFO "unlz4: flush && flush(outp, dest_len) != dest_len,  goto exit_2 \n");
+		if (flush && flush(outp, dest_len) != dest_len)
 			goto exit_2;
-		} else {
-		    printk(KERN_INFO "unlz4: else 1\n");
-		}
-		if (output){
-		    printk(KERN_INFO "unlz4: incrementing outp\n");
+		if (output)
 			outp += dest_len;
-		} else {
-		    printk(KERN_INFO "unlz4: else 2\n");
-		}
-		if (posp){
-		    printk(KERN_INFO "unlz4: incrementing posp\n");
+		if (posp)
 			*posp += chunksize;
-		} else {
-		    printk(KERN_INFO "unlz4: else 3\n");
-		}
 
-        printk(KERN_INFO "unlz4: checking if fill is null\n");
 		if (!fill) {
 			size -= chunksize;
-			printk(KERN_INFO "unlz4: chunksize=%zu, size=%ld\n", chunksize, size);
 
-			if (size == 0){
-			    printk(KERN_INFO "unlz4: size=0, break\n");
+			if (size == 0)
 				break;
-			} else if (size < 0) {
-			    printk(KERN_INFO "unlz4: size=%ld, data corrupted, goto exit_2\n", size);
+			else if (size < 0) {
 				error("data corrupted");
 				goto exit_2;
 			}
 			inp += chunksize;
-		} else {
-		    printk(KERN_INFO "unlz4: fill not null\n");
 		}
 	}
 
 exit_3:
-    printk(KERN_INFO "unlz4: reached exit_3\n");
 	ret = 0;
 exit_2:
-	if (!input){
-	    printk(KERN_INFO "unlz4: calling large_free(inp_start)\n");
+	if (!input)
 		large_free(inp_start);
-    } else {
-        printk(KERN_INFO "unlz4: skipping large_free(inp_start)\n");
-    }
 exit_1:
-	if (!output){
-	    printk(KERN_INFO "unlz4: calling large_free(outp)\n");
+	if (!output)
 		large_free(outp);
-    } else {
-        printk(KERN_INFO "unlz4: skipping calling large_free(outp)\n");
-    }
 exit_0:
-    printk(KERN_INFO "unlz4: returning %d\n", ret);
 	return ret;
 }
 
