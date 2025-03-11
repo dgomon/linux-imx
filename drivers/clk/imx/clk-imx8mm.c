@@ -188,6 +188,9 @@ static const char *imx8mm_i2c3_sels[] = {"osc_24m", "sys_pll1_160m", "sys_pll2_5
 static const char *imx8mm_i2c4_sels[] = {"osc_24m", "sys_pll1_160m", "sys_pll2_50m", "sys_pll3_out", "audio_pll1_out",
 					 "video_pll1_out", "audio_pll2_out", "sys_pll1_133m", };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 static const char *imx8mm_uart1_sels[] = {"osc_24m", "sys_pll1_80m", "sys_pll2_200m", "sys_pll2_100m",
 					  "sys_pll3_out", "clk_ext2", "clk_ext4", "audio_pll2_out", };
 
@@ -199,6 +202,8 @@ static const char *imx8mm_uart3_sels[] = {"osc_24m", "sys_pll1_80m", "sys_pll2_2
 
 static const char *imx8mm_uart4_sels[] = {"osc_24m", "sys_pll1_80m", "sys_pll2_200m", "sys_pll2_100m",
 					  "sys_pll3_out", "clk_ext2", "clk_ext3", "audio_pll2_out", };
+
+#pragma GCC diagnostic pop
 
 static const char *imx8mm_usb_core_sels[] = {"osc_24m", "sys_pll1_100m", "sys_pll1_40m", "sys_pll2_100m",
 					     "sys_pll2_200m", "clk_ext2", "clk_ext3", "audio_pll2_out", };
@@ -323,12 +328,15 @@ static int imx_clk_init_on(struct device_node *np,
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-variable"
 static int imx8mm_clocks_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct device_node *np = dev->of_node;
 	void __iomem *base;
 	int ret;
+
+    pr_info("imx8mm_clocks_probe: enter\n");
 
 	check_m4_enabled();
 
@@ -354,6 +362,7 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	if (WARN_ON(!base))
 		return -ENOMEM;
 
+    pr_info("imx8mm_clocks_probe: starting assignments\n");
 	hws[IMX8MM_AUDIO_PLL1_REF_SEL] = imx_clk_hw_mux("audio_pll1_ref_sel", base + 0x0, 0, 2, pll_ref_sels, ARRAY_SIZE(pll_ref_sels));
 	hws[IMX8MM_AUDIO_PLL2_REF_SEL] = imx_clk_hw_mux("audio_pll2_ref_sel", base + 0x14, 0, 2, pll_ref_sels, ARRAY_SIZE(pll_ref_sels));
 	hws[IMX8MM_VIDEO_PLL1_REF_SEL] = imx_clk_hw_mux("video_pll1_ref_sel", base + 0x28, 0, 2, pll_ref_sels, ARRAY_SIZE(pll_ref_sels));
@@ -374,6 +383,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_SYS_PLL2] = imx_clk_hw_fixed("sys_pll2", 1000000000);
 	hws[IMX8MM_SYS_PLL3] = imx_clk_hw_pll14xx("sys_pll3", "sys_pll3_ref_sel", base + 0x114, &imx_1416x_pll);
 
+	pr_info("imx8mm_clocks_probe: checkpoint 1\n");
+
 	/* PLL bypass out */
 	hws[IMX8MM_AUDIO_PLL1_BYPASS] = imx_clk_hw_mux_flags("audio_pll1_bypass", base, 16, 1, audio_pll1_bypass_sels, ARRAY_SIZE(audio_pll1_bypass_sels), CLK_SET_RATE_PARENT);
 	hws[IMX8MM_AUDIO_PLL2_BYPASS] = imx_clk_hw_mux_flags("audio_pll2_bypass", base + 0x14, 16, 1, audio_pll2_bypass_sels, ARRAY_SIZE(audio_pll2_bypass_sels), CLK_SET_RATE_PARENT);
@@ -384,6 +395,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_ARM_PLL_BYPASS] = imx_clk_hw_mux_flags("arm_pll_bypass", base + 0x84, 28, 1, arm_pll_bypass_sels, ARRAY_SIZE(arm_pll_bypass_sels), CLK_SET_RATE_PARENT);
 	hws[IMX8MM_SYS_PLL3_BYPASS] = imx_clk_hw_mux_flags("sys_pll3_bypass", base + 0x114, 28, 1, sys_pll3_bypass_sels, ARRAY_SIZE(sys_pll3_bypass_sels), CLK_SET_RATE_PARENT);
 
+    pr_info("imx8mm_clocks_probe: checkpoint 2\n");
+
 	/* PLL out gate */
 	hws[IMX8MM_AUDIO_PLL1_OUT] = imx_clk_hw_gate("audio_pll1_out", "audio_pll1_bypass", base, 13);
 	hws[IMX8MM_AUDIO_PLL2_OUT] = imx_clk_hw_gate("audio_pll2_out", "audio_pll2_bypass", base + 0x14, 13);
@@ -393,6 +406,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_VPU_PLL_OUT] = imx_clk_hw_gate("vpu_pll_out", "vpu_pll_bypass", base + 0x74, 11);
 	hws[IMX8MM_ARM_PLL_OUT] = imx_clk_hw_gate("arm_pll_out", "arm_pll_bypass", base + 0x84, 11);
 	hws[IMX8MM_SYS_PLL3_OUT] = imx_clk_hw_gate("sys_pll3_out", "sys_pll3_bypass", base + 0x114, 11);
+
+    pr_info("imx8mm_clocks_probe: checkpoint 3\n");
 
 	/* SYS PLL1 fixed output */
 	hws[IMX8MM_SYS_PLL1_OUT] = imx_clk_hw_gate("sys_pll1_out", "sys_pll1", base + 0x94, 11);
@@ -407,6 +422,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_SYS_PLL1_400M] = imx_clk_hw_fixed_factor("sys_pll1_400m", "sys_pll1_out", 1, 2);
 	hws[IMX8MM_SYS_PLL1_800M] = imx_clk_hw_fixed_factor("sys_pll1_800m", "sys_pll1_out", 1, 1);
 
+    pr_info("imx8mm_clocks_probe: checkpoint 4\n");
+
 	/* SYS PLL2 fixed output */
 	hws[IMX8MM_SYS_PLL2_OUT] = imx_clk_hw_gate("sys_pll2_out", "sys_pll2", base + 0x104, 11);
 	hws[IMX8MM_SYS_PLL2_50M] = imx_clk_hw_fixed_factor("sys_pll2_50m", "sys_pll2_out", 1, 20);
@@ -419,6 +436,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_SYS_PLL2_500M] = imx_clk_hw_fixed_factor("sys_pll2_500m", "sys_pll2_out", 1, 2);
 	hws[IMX8MM_SYS_PLL2_1000M] = imx_clk_hw_fixed_factor("sys_pll2_1000m", "sys_pll2_out", 1, 1);
 
+    pr_info("imx8mm_clocks_probe: checkpoint 5\n");
+
 	hws[IMX8MM_CLK_CLKOUT1_SEL] = imx_clk_hw_mux2("clkout1_sel", base + 0x128, 4, 4, clkout_sels, ARRAY_SIZE(clkout_sels));
 	hws[IMX8MM_CLK_CLKOUT1_DIV] = imx_clk_hw_divider("clkout1_div", "clkout1_sel", base + 0x128, 0, 4);
 	hws[IMX8MM_CLK_CLKOUT1] = imx_clk_hw_gate("clkout1", "clkout1_div", base + 0x128, 8);
@@ -426,10 +445,17 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_CLK_CLKOUT2_DIV] = imx_clk_hw_divider("clkout2_div", "clkout2_sel", base + 0x128, 16, 4);
 	hws[IMX8MM_CLK_CLKOUT2] = imx_clk_hw_gate("clkout2", "clkout2_div", base + 0x128, 24);
 
+    pr_info("imx8mm_clocks_probe: checkpoint 6\n");
+
 	np = dev->of_node;
 	base = devm_platform_ioremap_resource(pdev, 0);
-	if (WARN_ON(IS_ERR(base)))
+
+	pr_info("imx8mm_clocks_probe: checkpoint 7\n");
+
+	if (WARN_ON(IS_ERR(base))) {
+	    pr_info("imx8mm_clocks_probe: returning PTR_ERR(base)\n");
 		return PTR_ERR(base);
+    }
 
 	/* Core Slice */
 	hws[IMX8MM_CLK_A53_DIV] = imx8m_clk_hw_composite_core("arm_a53_div", imx8mm_a53_sels, base + 0x8000);
@@ -440,6 +466,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_CLK_VPU_CORE] = imx8m_clk_hw_composite_core("vpu_core", imx8mm_vpu_sels, base + 0x8100);
 	hws[IMX8MM_CLK_GPU3D_CORE] = imx8m_clk_hw_composite_core("gpu3d_core", imx8mm_gpu3d_sels, base + 0x8180);
 	hws[IMX8MM_CLK_GPU2D_CORE] = imx8m_clk_hw_composite_core("gpu2d_core", imx8mm_gpu2d_sels, base + 0x8200);
+
+    pr_info("imx8mm_clocks_probe: checkpoint 8\n");
 
 	/* For backwards compatibility */
 	hws[IMX8MM_CLK_M4_SRC] = hws[IMX8MM_CLK_M4_CORE];
@@ -454,6 +482,8 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_CLK_GPU2D_SRC] = hws[IMX8MM_CLK_GPU2D_CORE];
 	hws[IMX8MM_CLK_GPU2D_CG] = hws[IMX8MM_CLK_GPU2D_CORE];
 	hws[IMX8MM_CLK_GPU2D_DIV] = hws[IMX8MM_CLK_GPU2D_CORE];
+
+    pr_info("imx8mm_clocks_probe: checkpoint 9\n");
 
 	/* CORE SEL */
 	hws[IMX8MM_CLK_A53_CORE] = imx_clk_hw_mux2("arm_a53_core", base + 0x9880, 24, 1, imx8mm_a53_core_sels, ARRAY_SIZE(imx8mm_a53_core_sels));
@@ -488,67 +518,132 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_CLK_DRAM_ALT] = imx8m_clk_hw_fw_managed_composite("dram_alt", imx8mm_dram_alt_sels, base + 0xa000);
 	hws[IMX8MM_CLK_DRAM_APB] = imx8m_clk_hw_fw_managed_composite_critical("dram_apb", imx8mm_dram_apb_sels, base + 0xa080);
 
+    pr_info("imx8mm_clocks_probe: checkpoint 10\n");
+    pr_info("imx8mm_clocks_probe: checkpoint 10.00\n");
+
 	/* IP */
 	hws[IMX8MM_CLK_VPU_G1] = imx8m_clk_hw_composite("vpu_g1", imx8mm_vpu_g1_sels, base + 0xa100);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.1\n");
 	hws[IMX8MM_CLK_VPU_G2] = imx8m_clk_hw_composite("vpu_g2", imx8mm_vpu_g2_sels, base + 0xa180);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.2\n");
 	hws[IMX8MM_CLK_DISP_DTRC] = imx8m_clk_hw_composite("disp_dtrc", imx8mm_disp_dtrc_sels, base + 0xa200);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.3\n");
 	hws[IMX8MM_CLK_DISP_DC8000] = imx8m_clk_hw_composite("disp_dc8000", imx8mm_disp_dc8000_sels, base + 0xa280);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.4\n");
 	hws[IMX8MM_CLK_PCIE1_CTRL] = imx8m_clk_hw_composite("pcie1_ctrl", imx8mm_pcie1_ctrl_sels, base + 0xa300);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.5\n");
 	hws[IMX8MM_CLK_PCIE1_PHY] = imx8m_clk_hw_composite("pcie1_phy", imx8mm_pcie1_phy_sels, base + 0xa380);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.6\n");
 	hws[IMX8MM_CLK_PCIE1_AUX] = imx8m_clk_hw_composite("pcie1_aux", imx8mm_pcie1_aux_sels, base + 0xa400);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.7\n");
 	hws[IMX8MM_CLK_DC_PIXEL] = imx8m_clk_hw_composite("dc_pixel", imx8mm_dc_pixel_sels, base + 0xa480);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.8\n");
 	hws[IMX8MM_CLK_LCDIF_PIXEL] = imx8m_clk_hw_composite_flags("lcdif_pixel", imx8mm_lcdif_pixel_sels, base + 0xa500, 0);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.9\n");
 	hws[IMX8MM_CLK_SAI1] = imx8m_clk_hw_composite("sai1", imx8mm_sai1_sels, base + 0xa580);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.10\n");
 	hws[IMX8MM_CLK_SAI2] = imx8m_clk_hw_composite("sai2", imx8mm_sai2_sels, base + 0xa600);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.11\n");
 	hws[IMX8MM_CLK_SAI3] = imx8m_clk_hw_composite("sai3", imx8mm_sai3_sels, base + 0xa680);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.12\n");
 	hws[IMX8MM_CLK_SAI4] = imx8m_clk_hw_composite("sai4", imx8mm_sai4_sels, base + 0xa700);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.13\n");
 	hws[IMX8MM_CLK_SAI5] = imx8m_clk_hw_composite("sai5", imx8mm_sai5_sels, base + 0xa780);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.14\n");
 	hws[IMX8MM_CLK_SAI6] = imx8m_clk_hw_composite("sai6", imx8mm_sai6_sels, base + 0xa800);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.15\n");
 	hws[IMX8MM_CLK_SPDIF1] = imx8m_clk_hw_composite("spdif1", imx8mm_spdif1_sels, base + 0xa880);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.16\n");
 	hws[IMX8MM_CLK_SPDIF2] = imx8m_clk_hw_composite("spdif2", imx8mm_spdif2_sels, base + 0xa900);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.17\n");
 	hws[IMX8MM_CLK_ENET_REF] = imx8m_clk_hw_composite("enet_ref", imx8mm_enet_ref_sels, base + 0xa980);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.18\n");
 	hws[IMX8MM_CLK_ENET_TIMER] = imx8m_clk_hw_composite("enet_timer", imx8mm_enet_timer_sels, base + 0xaa00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.19\n");
 	hws[IMX8MM_CLK_ENET_PHY_REF] = imx8m_clk_hw_composite("enet_phy", imx8mm_enet_phy_sels, base + 0xaa80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.20\n");
 	hws[IMX8MM_CLK_NAND] = imx8m_clk_hw_composite("nand", imx8mm_nand_sels, base + 0xab00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.21\n");
 	hws[IMX8MM_CLK_QSPI] = imx8m_clk_hw_composite("qspi", imx8mm_qspi_sels, base + 0xab80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.21\n");
 	hws[IMX8MM_CLK_USDHC1] = imx8m_clk_hw_composite("usdhc1", imx8mm_usdhc1_sels, base + 0xac00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.23\n");
 	hws[IMX8MM_CLK_USDHC2] = imx8m_clk_hw_composite("usdhc2", imx8mm_usdhc2_sels, base + 0xac80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.24\n");
 	hws[IMX8MM_CLK_I2C1] = imx8m_clk_hw_composite("i2c1", imx8mm_i2c1_sels, base + 0xad00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.25\n");
 	hws[IMX8MM_CLK_I2C2] = imx8m_clk_hw_composite("i2c2", imx8mm_i2c2_sels, base + 0xad80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.26\n");
 	hws[IMX8MM_CLK_I2C3] = imx8m_clk_hw_composite("i2c3", imx8mm_i2c3_sels, base + 0xae00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.27\n");
 	hws[IMX8MM_CLK_I2C4] = imx8m_clk_hw_composite("i2c4", imx8mm_i2c4_sels, base + 0xae80);
-	hws[IMX8MM_CLK_UART1] = imx8m_clk_hw_composite("uart1", imx8mm_uart1_sels, base + 0xaf00);
-	hws[IMX8MM_CLK_UART2] = imx8m_clk_hw_composite_critical("uart2", imx8mm_uart2_sels, base + 0xaf80);
-	hws[IMX8MM_CLK_UART3] = imx8m_clk_hw_composite("uart3", imx8mm_uart3_sels, base + 0xb000);
-	hws[IMX8MM_CLK_UART4] = imx8m_clk_hw_composite("uart4", imx8mm_uart4_sels, base + 0xb080);
+//	pr_info("imx8mm_clocks_probe: checkpoint 10.28\n");
+//	hws[IMX8MM_CLK_UART1] = imx8m_clk_hw_composite("uart1", imx8mm_uart1_sels, base + 0xaf00);
+//	pr_info("imx8mm_clocks_probe: checkpoint 10.29\n");
+//	hws[IMX8MM_CLK_UART2] = imx8m_clk_hw_composite_critical("uart2", imx8mm_uart2_sels, base + 0xaf80);
+//	pr_info("imx8mm_clocks_probe: checkpoint 10.30\n");
+//	hws[IMX8MM_CLK_UART3] = imx8m_clk_hw_composite("uart3", imx8mm_uart3_sels, base + 0xb000);
+//	pr_info("imx8mm_clocks_probe: checkpoint 10.31\n");
+//	hws[IMX8MM_CLK_UART4] = imx8m_clk_hw_composite("uart4", imx8mm_uart4_sels, base + 0xb080);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.32\n");
 	hws[IMX8MM_CLK_USB_CORE_REF] = imx8m_clk_hw_composite("usb_core_ref", imx8mm_usb_core_sels, base + 0xb100);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.33\n");
 	hws[IMX8MM_CLK_USB_PHY_REF] = imx8m_clk_hw_composite("usb_phy_ref", imx8mm_usb_phy_sels, base + 0xb180);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.34\n");
 	hws[IMX8MM_CLK_GIC] = imx8m_clk_hw_composite_critical("gic", imx8mm_gic_sels, base + 0xb200);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.35\n");
 	hws[IMX8MM_CLK_ECSPI1] = imx8m_clk_hw_composite("ecspi1", imx8mm_ecspi1_sels, base + 0xb280);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.36\n");
 	hws[IMX8MM_CLK_ECSPI2] = imx8m_clk_hw_composite("ecspi2", imx8mm_ecspi2_sels, base + 0xb300);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.37\n");
 	hws[IMX8MM_CLK_PWM1] = imx8m_clk_hw_composite("pwm1", imx8mm_pwm1_sels, base + 0xb380);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.38\n");
 	hws[IMX8MM_CLK_PWM2] = imx8m_clk_hw_composite("pwm2", imx8mm_pwm2_sels, base + 0xb400);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.39\n");
 	hws[IMX8MM_CLK_PWM3] = imx8m_clk_hw_composite("pwm3", imx8mm_pwm3_sels, base + 0xb480);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.40\n");
 	hws[IMX8MM_CLK_PWM4] = imx8m_clk_hw_composite("pwm4", imx8mm_pwm4_sels, base + 0xb500);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.41\n");
 	hws[IMX8MM_CLK_GPT1] = imx8m_clk_hw_composite("gpt1", imx8mm_gpt1_sels, base + 0xb580);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.42\n");
 	hws[IMX8MM_CLK_WDOG] = imx8m_clk_hw_composite("wdog", imx8mm_wdog_sels, base + 0xb900);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.43\n");
 	hws[IMX8MM_CLK_WRCLK] = imx8m_clk_hw_composite("wrclk", imx8mm_wrclk_sels, base + 0xb980);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.44\n");
 	hws[IMX8MM_CLK_CLKO1] = imx8m_clk_hw_composite("clko1", imx8mm_clko1_sels, base + 0xba00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.45\n");
 	hws[IMX8MM_CLK_CLKO2] = imx8m_clk_hw_composite("clko2", imx8mm_clko2_sels, base + 0xba80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.46\n");
 	hws[IMX8MM_CLK_DSI_CORE] = imx8m_clk_hw_composite("dsi_core", imx8mm_dsi_core_sels, base + 0xbb00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.47\n");
 	hws[IMX8MM_CLK_DSI_PHY_REF] = imx8m_clk_hw_composite("dsi_phy_ref", imx8mm_dsi_phy_sels, base + 0xbb80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.48\n");
 	hws[IMX8MM_CLK_DSI_DBI] = imx8m_clk_hw_composite("dsi_dbi", imx8mm_dsi_dbi_sels, base + 0xbc00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.49\n");
 	hws[IMX8MM_CLK_USDHC3] = imx8m_clk_hw_composite("usdhc3", imx8mm_usdhc3_sels, base + 0xbc80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.50\n");
 	hws[IMX8MM_CLK_CSI1_CORE] = imx8m_clk_hw_composite("csi1_core", imx8mm_csi1_core_sels, base + 0xbd00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.51\n");
 	hws[IMX8MM_CLK_CSI2_CORE] = imx8m_clk_hw_composite("csi2_core", imx8mm_csi2_core_sels, base + 0xbe80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.52\n");
 	hws[IMX8MM_CLK_CSI2_PHY_REF] = imx8m_clk_hw_composite("csi2_phy_ref", imx8mm_csi2_phy_sels, base + 0xbf00);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.53\n");
 	hws[IMX8MM_CLK_CSI2_ESC] = imx8m_clk_hw_composite("csi2_esc", imx8mm_csi2_esc_sels, base + 0xbf80);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.54\n");
 	hws[IMX8MM_CLK_PCIE2_CTRL] = imx8m_clk_hw_composite("pcie2_ctrl", imx8mm_pcie2_ctrl_sels, base + 0xc000);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.55\n");
 	hws[IMX8MM_CLK_PCIE2_PHY] = imx8m_clk_hw_composite("pcie2_phy", imx8mm_pcie2_phy_sels, base + 0xc080);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.56\n");
 	hws[IMX8MM_CLK_PCIE2_AUX] = imx8m_clk_hw_composite("pcie2_aux", imx8mm_pcie2_aux_sels, base + 0xc100);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.57\n");
 	hws[IMX8MM_CLK_ECSPI3] = imx8m_clk_hw_composite("ecspi3", imx8mm_ecspi3_sels, base + 0xc180);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.58\n");
 	hws[IMX8MM_CLK_PDM] = imx8m_clk_hw_composite("pdm", imx8mm_pdm_sels, base + 0xc200);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.59\n");
 	hws[IMX8MM_CLK_VPU_H1] = imx8m_clk_hw_composite("vpu_h1", imx8mm_vpu_h1_sels, base + 0xc280);
+	pr_info("imx8mm_clocks_probe: checkpoint 10.60\n");
+
+    pr_info("imx8mm_clocks_probe: checkpoint 11\n");
 
 	/* CCGR */
 	hws[IMX8MM_CLK_ECSPI1_ROOT] = imx_clk_hw_gate4("ecspi1_root_clk", "ecspi1", base + 0x4070, 0);
@@ -617,10 +712,14 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	hws[IMX8MM_CLK_GPU2D_ROOT] = imx_clk_hw_gate4("gpu2d_root_clk", "gpu2d_core", base + 0x4660, 0);
 	hws[IMX8MM_CLK_CSI1_ROOT] = imx_clk_hw_gate4("csi1_root_clk", "csi1_core", base + 0x4650, 0);
 
+
+    pr_info("imx8mm_clocks_probe: checkpoint 12\n");
 	hws[IMX8MM_CLK_GPT_3M] = imx_clk_hw_fixed_factor("gpt_3m", "osc_24m", 1, 8);
 
 	hws[IMX8MM_CLK_DRAM_ALT_ROOT] = imx_clk_hw_fixed_factor("dram_alt_root", "dram_alt", 1, 4);
 	hws[IMX8MM_CLK_DRAM_CORE] = imx_clk_hw_mux2_flags("dram_core_clk", base + 0x9800, 24, 1, imx8mm_dram_core_sels, ARRAY_SIZE(imx8mm_dram_core_sels), CLK_IS_CRITICAL);
+
+    pr_info("imx8mm_clocks_probe: checkpoint 13\n");
 
 	hws[IMX8MM_CLK_ARM] = imx_clk_hw_cpu("arm", "arm_a53_core",
 					   hws[IMX8MM_CLK_A53_CORE]->clk,
@@ -628,18 +727,23 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 					   hws[IMX8MM_ARM_PLL_OUT]->clk,
 					   hws[IMX8MM_CLK_A53_DIV]->clk);
 
+    pr_info("imx8mm_clocks_probe: calling imx_check_clk_hws()\n");
 	imx_check_clk_hws(hws, IMX8MM_CLK_END);
 
+    pr_info("imx8mm_clocks_probe: calling of_clk_add_hw_provider()\n");
 	ret = of_clk_add_hw_provider(np, of_clk_hw_onecell_get, clk_hw_data);
 	if (ret < 0) {
 		dev_err(dev, "failed to register clks for i.MX8MM\n");
 		goto unregister_hws;
 	}
 
+    pr_info("imx8mm_clocks_probe: calling imx_clk_init_on()\n");
 	imx_clk_init_on(np, hws);
 
+    pr_info("imx8mm_clocks_probe: calling clk_set_parent()\n");
 	clk_set_parent(hws[IMX8MM_CLK_CSI1_CORE]->clk, hws[IMX8MM_SYS_PLL2_1000M]->clk);
 
+    pr_info("imx8mm_clocks_probe: calling imx_register_uart_clocks()\n");
 	imx_register_uart_clocks();
 
 	return 0;
@@ -657,19 +761,19 @@ static const struct of_device_id imx8mm_clk_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, imx8mm_clk_of_match);
 
-//static struct platform_driver imx8mm_clk_driver = {
-//	.probe = imx8mm_clocks_probe,
-//	.driver = {
-//		.name = "imx8mm-ccm",
-//		/*
-//		 * Disable bind attributes: clocks are not removed and
-//		 * reloading the driver will crash or break devices.
-//		 */
-//		.suppress_bind_attrs = true,
-//		.of_match_table = imx8mm_clk_of_match,
-//	},
-//};
-//module_platform_driver(imx8mm_clk_driver);
+static struct platform_driver imx8mm_clk_driver = {
+	.probe = imx8mm_clocks_probe,
+	.driver = {
+		.name = "imx8mm-ccm",
+		/*
+		 * Disable bind attributes: clocks are not removed and
+		 * reloading the driver will crash or break devices.
+		 */
+		.suppress_bind_attrs = true,
+		.of_match_table = imx8mm_clk_of_match,
+	},
+};
+module_platform_driver(imx8mm_clk_driver);
 module_param(mcore_booted, bool, S_IRUGO);
 MODULE_PARM_DESC(mcore_booted, "See Cortex-M core is booted or not");
 
@@ -697,7 +801,7 @@ static int pll_delta_k_set(void *data, u64 val)
 
 	clk_set_delta_k(hw, val);
 
-	pr_debug("the delta k is %d\n", delta_k);
+	pr_info("the delta k is %d\n", delta_k);
 	return 0;
 }
 DEFINE_DEBUGFS_ATTRIBUTE(delta_k_fops, NULL, pll_delta_k_set, "%lld\n");
