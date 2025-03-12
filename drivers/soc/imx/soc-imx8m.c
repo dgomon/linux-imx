@@ -3,6 +3,7 @@
  * Copyright 2019 NXP.
  */
 
+#include <linux/arm-smccc.h>
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/module.h>
@@ -13,6 +14,8 @@
 #include <linux/arm-smccc.h>
 #include <linux/of.h>
 #include <linux/clk.h>
+
+#include <soc/imx/src.h>
 
 #define REV_B1				0x21
 
@@ -297,6 +300,28 @@ free_soc:
 }
 
 device_initcall(imx8_soc_init);
+MODULE_LICENSE("GPL");
+#define FSL_SIP_SRC                    0xc2000005
+#define FSL_SIP_SRC_M4_START           0x00
+#define FSL_SIP_SRC_M4_STARTED         0x01
+/* To indicate M4 enabled or not on i.MX8MQ */
+static bool m4_is_enabled;
+bool imx_src_is_m4_enabled(void)
+{
+	return m4_is_enabled;
+}
+EXPORT_SYMBOL(imx_src_is_m4_enabled);
+int check_m4_enabled(void)
+{
+	struct arm_smccc_res res;
+	arm_smccc_smc(FSL_SIP_SRC, FSL_SIP_SRC_M4_STARTED, 0,
+		      0, 0, 0, 0, 0, &res);
+		      m4_is_enabled = !!res.a0;
+	if (m4_is_enabled)
+		printk("M4 is started\n");
+	return 0;
+}
+EXPORT_SYMBOL(check_m4_enabled);
 
 MODULE_DESCRIPTION("i.MX8M SoC driver");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");

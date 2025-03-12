@@ -77,8 +77,7 @@ static struct clk_hw *imx_ulp_clk_hw_composite(const char *name,
 				     const char * const *parent_names,
 				     int num_parents, bool mux_present,
 				     bool rate_present, bool gate_present,
-				     void __iomem *reg, bool has_swrst,
-				     unsigned long flags)
+				     void __iomem *reg, bool has_swrst)
 {
 	struct clk_hw *mux_hw = NULL, *fd_hw = NULL, *gate_hw = NULL;
 	struct clk_fractional_divider *fd = NULL;
@@ -141,11 +140,9 @@ static struct clk_hw *imx_ulp_clk_hw_composite(const char *name,
 		 * change since the prepare count is zero, but HW actually
 		 * prevent the parent/rate change due to the clock is enabled.
 		 */
-		if (!(flags & CLK_IS_CRITICAL)) {
-			val = readl_relaxed(reg);
-			val &= ~(1 << PCG_CGC_SHIFT);
-			writel_relaxed(val, reg);
-		}
+		 val = readl_relaxed(reg);
+         val &= ~(1 << PCG_CGC_SHIFT);
+         writel_relaxed(val, reg);
 	}
 
 	hw = clk_hw_register_composite(NULL, name, parent_names, num_parents,
@@ -167,7 +164,7 @@ struct clk_hw *imx7ulp_clk_hw_composite(const char *name, const char * const *pa
 				bool gate_present, void __iomem *reg)
 {
 	return imx_ulp_clk_hw_composite(name, parent_names, num_parents, mux_present, rate_present,
-					gate_present, reg, false, 0);
+					gate_present, reg, false);
 }
 
 struct clk_hw *imx8ulp_clk_hw_composite(const char *name, const char * const *parent_names,
@@ -175,15 +172,6 @@ struct clk_hw *imx8ulp_clk_hw_composite(const char *name, const char * const *pa
 				bool gate_present, void __iomem *reg, bool has_swrst)
 {
 	return imx_ulp_clk_hw_composite(name, parent_names, num_parents, mux_present, rate_present,
-					gate_present, reg, has_swrst, 0);
+					gate_present, reg, has_swrst);
 }
 EXPORT_SYMBOL_GPL(imx8ulp_clk_hw_composite);
-
-struct clk_hw *imx8ulp_clk_hw_composite_flags(const char *name, const char * const *parent_names,
-				int num_parents, bool mux_present, bool rate_present,
-				bool gate_present, void __iomem *reg, bool has_swrst, unsigned long flags)
-{
-	return imx_ulp_clk_hw_composite(name, parent_names, num_parents, mux_present, rate_present,
-					gate_present, reg, has_swrst, flags);
-}
-EXPORT_SYMBOL_GPL(imx8ulp_clk_hw_composite_flags);
