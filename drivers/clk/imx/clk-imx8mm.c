@@ -744,8 +744,7 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
 	clk_set_parent(hws[IMX8MM_CLK_CSI1_CORE]->clk, hws[IMX8MM_SYS_PLL2_1000M]->clk);
 
     pr_info("imx8mm_clocks_probe: calling imx_register_uart_clocks()\n");
-    pr_info("imx8mm_clocks_probe: !!!WIP!!! skipping calling imx_register_uart_clocks()\n");
-//	imx_register_uart_clocks();
+	imx_register_uart_clocks();
 
 	return 0;
 

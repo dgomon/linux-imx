@@ -175,8 +175,6 @@ __setup_param("earlycon", imx_keep_uart_earlycon,
 __setup_param("earlyprintk", imx_keep_uart_earlyprintk,
 	      imx_keep_uart_clocks_param, 0);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
 void imx_register_uart_clocks(void)
 {
 	unsigned int num __maybe_unused;
@@ -213,7 +211,6 @@ void imx_register_uart_clocks(void)
 	}
 #endif
 }
-#pragma clang diagnostic pop
 
 static int __init imx_clk_disable_uart(void)
 {
