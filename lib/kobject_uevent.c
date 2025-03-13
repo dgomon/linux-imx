@@ -13,8 +13,6 @@
  *	Greg Kroah-Hartman	<greg@kroah.com>
  */
 
-#define DEBUG
-
 #include <linux/spinlock.h>
 #include <linux/string.h>
 #include <linux/kobject.h>
