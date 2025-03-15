@@ -570,7 +570,7 @@ static int imx8mm_init_busfreq_clk(struct platform_device *pdev)
 	    IS_ERR(dram_core_clk) || IS_ERR(dram_apb_src) || IS_ERR(dram_apb_pre_div) ||
 	    IS_ERR(sys1_pll_800m) || IS_ERR(sys1_pll_100m) || IS_ERR(sys1_pll_40m) ||
 	    IS_ERR(osc_25m) || IS_ERR(noc_div) || IS_ERR(main_axi_src) || IS_ERR(ahb_div) ||
-	    IS_ERR(sys2_pll_333m) || (gic_100mts ? IS_ERR(gic_div) : 0)) {
+	    IS_ERR(sys2_pll_333m)) {
 		dev_err(&pdev->dev, "failed to get busfreq clk mq2\n");
 		return -EINVAL;
 	}
