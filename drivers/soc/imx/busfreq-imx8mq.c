@@ -566,6 +566,91 @@ static int imx8mm_init_busfreq_clk(struct platform_device *pdev)
 	if(gic_100mts)
 		gic_div = devm_clk_get(&pdev->dev, "gic_div");
 
+    if (IS_ERR(dram_pll_clk)) {
+        dev_err(&pdev->dev, "dram_pll_clk failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "dram_pll_clk passed\n");
+    }
+    if (IS_ERR(dram_alt_src)) {
+        dev_err(&pdev->dev, "dram_alt_src failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "dram_alt_src passed\n");
+    }
+    if (IS_ERR(dram_alt_root)) {
+        dev_err(&pdev->dev, "dram_alt_root failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "dram_alt_root passed\n");
+    }
+    if (IS_ERR(dram_core_clk)) {
+        dev_err(&pdev->dev, "dram_core_clk failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "dram_core_clk passed\n");
+    }
+    if (IS_ERR(dram_apb_src)) {
+        dev_err(&pdev->dev, "dram_apb_src failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "dram_apb_src passed\n");
+    }
+    if (IS_ERR(dram_apb_pre_div)) {
+        dev_err(&pdev->dev, "dram_apb_pre_div failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "dram_apb_pre_div passed\n");
+    }
+    if (IS_ERR(sys1_pll_800m)) {
+        dev_err(&pdev->dev, "sys1_pll_800m failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "sys1_pll_800m passed\n");
+    }
+    if (IS_ERR(sys1_pll_100m)) {
+        dev_err(&pdev->dev, "sys1_pll_100m failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "sys1_pll_100m passed\n");
+    }
+    if (IS_ERR(sys1_pll_40m)) {
+        dev_err(&pdev->dev, "sys1_pll_40m failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "sys1_pll_40m passed\n");
+    }
+    if (IS_ERR(osc_25m)) {
+        dev_err(&pdev->dev, "osc_25m failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "osc_25m passed\n");
+    }
+    if (IS_ERR(noc_div)) {
+        dev_err(&pdev->dev, "noc_div failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "noc_div passed\n");
+    }
+    if (IS_ERR(main_axi_src)) {
+        dev_err(&pdev->dev, "main_axi_src failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "main_axi_src passed\n");
+    }
+    if (IS_ERR(ahb_div)) {
+        dev_err(&pdev->dev, "ahb_div failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "ahb_div passed\n");
+    }
+    if (IS_ERR(sys2_pll_333m)) {
+        dev_err(&pdev->dev, "sys2_pll_333m failed\n");
+    }
+    else {
+        dev_err(&pdev->dev, "sys2_pll_333m passed\n");
+    }
+
 	if (IS_ERR(dram_pll_clk) || IS_ERR(dram_alt_src) || IS_ERR(dram_alt_root) ||
 	    IS_ERR(dram_core_clk) || IS_ERR(dram_apb_src) || IS_ERR(dram_apb_pre_div) ||
 	    IS_ERR(sys1_pll_800m) || IS_ERR(sys1_pll_100m) || IS_ERR(sys1_pll_40m) ||
