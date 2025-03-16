@@ -130,8 +130,10 @@ choice
 
 	config INIT_STACK_ALL_ZERO
 		bool "zero-init everything (strongest and safest)"
-		depends on CC_HAS_AUTO_VAR_INIT_ZERO
-		depends on !KMSAN
+#		depends on CC_HAS_AUTO_VAR_INIT_ZERO
+#		depends on !KMSAN
+		depends on y
+		depends on y
 		help
 		  Initializes everything on the stack (including padding)
 		  with a zero value. This is intended to eliminate all
