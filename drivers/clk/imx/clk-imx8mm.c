@@ -321,8 +321,6 @@ static int imx_clk_init_on(struct device_node *np,
 	return 0;
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
 static int imx8mm_clocks_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -649,7 +647,6 @@ unregister_hws:
 
 	return ret;
 }
-#pragma clang diagnostic pop
 
 static const struct of_device_id imx8mm_clk_of_match[] = {
 	{ .compatible = "fsl,imx8mm-ccm" },
@@ -657,19 +654,19 @@ static const struct of_device_id imx8mm_clk_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, imx8mm_clk_of_match);
 
-//static struct platform_driver imx8mm_clk_driver = {
-//	.probe = imx8mm_clocks_probe,
-//	.driver = {
-//		.name = "imx8mm-ccm",
-//		/*
-//		 * Disable bind attributes: clocks are not removed and
-//		 * reloading the driver will crash or break devices.
-//		 */
-//		.suppress_bind_attrs = true,
-//		.of_match_table = imx8mm_clk_of_match,
-//	},
-//};
-//module_platform_driver(imx8mm_clk_driver);
+static struct platform_driver imx8mm_clk_driver = {
+	.probe = imx8mm_clocks_probe,
+	.driver = {
+		.name = "imx8mm-ccm",
+		/*
+		 * Disable bind attributes: clocks are not removed and
+		 * reloading the driver will crash or break devices.
+		 */
+		.suppress_bind_attrs = true,
+		.of_match_table = imx8mm_clk_of_match,
+	},
+};
+module_platform_driver(imx8mm_clk_driver);
 module_param(mcore_booted, bool, S_IRUGO);
 MODULE_PARM_DESC(mcore_booted, "See Cortex-M core is booted or not");
 

@@ -18,8 +18,6 @@
  * 				   mandatory if CONFIG_NET=y these days
  */
 
-#define DEBUG
-
 #include <linux/module.h>
 
 #include <linux/bpf.h>
@@ -1838,8 +1836,6 @@ static int netlink_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
 	int err;
 	struct scm_cookie scm;
 	u32 netlink_skb_flags = 0;
-
-    pr_info("NETLINK UEVENT: len=%zu\n", len);
 
 	if (msg->msg_flags & MSG_OOB)
 		return -EOPNOTSUPP;

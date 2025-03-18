@@ -17,7 +17,7 @@
 / {
 	simple_sound: sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "mcm-imx8m-mini";
+		simple-audio-card,name = "cl-imx8m-mini";
 		simple-audio-card,widgets =
 			"Headphone", "Headphone Jack",
 			"Line", "Line Out",
@@ -102,6 +102,22 @@
 	};
 };
 
+&usdhc1 {
+	non-removable;
+	pm-ignore-notify;
+	cap-power-off-card;
+	status = "okay";
+	mmc-pwrseq = <&usdhc1_pwrseq>;
+
+	brcmf: wifi@1 {
+		reg = <1>;
+		compatible = "brcm,bcm4329-fmac";
+		interrupt-parent = <&gpio2>;
+		interrupts = <9 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "host-wake";
+	};
+};
+
 &iomuxc {
 	sb-mcm-imx8 {
 		pinctrl_ecspi1: ecspi1grp {
@@ -123,6 +139,50 @@
 				MX8MM_IOMUXC_SAI1_TXFS_GPIO4_IO10	0x00
 				MX8MM_IOMUXC_SAI1_TXD0_GPIO4_IO12	0x00
 				MX8MM_IOMUXC_SAI1_RXD0_GPIO4_IO2	0x00
+			>;
+		};
+		
+		pinctrl_usdhc2_gpio: usdhc2grpgpio {
+			fsl,pins = <
+				MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
+				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x41
+				MX8MM_IOMUXC_SD2_WP_GPIO2_IO20		0x00
+			>;
+		};
+
+		pinctrl_usdhc2: usdhc2grp {
+			fsl,pins = <
+				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
+				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
+				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
+				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
+				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
+				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
+				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
+			>;
+		};
+
+		pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
+			fsl,pins = <
+				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
+				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
+				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
+				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
+				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
+				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
+				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
+			>;
+		};
+
+		pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
+			fsl,pins = <
+				MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
+				MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
+				MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
+				MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
+				MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
+				MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
+				MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
 			>;
 		};
 	};
@@ -157,7 +217,7 @@
 		 <&clk IMX8MM_CLK_PCIE1_PHY>,
 		 <&pcie0_refclk>;
 	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
-	ext_osc = <0>;
+	ext_osc = <1>;
 	reserved-region = <&rpmsg_reserved>;
 	status = "okay";
 };
@@ -216,12 +276,16 @@
 
 		mclk = <24000000>;
 		mclk_source = <0>;
+		mipi_csi;
 		port {
 			ov5640_mipi1_ep: endpoint {
 				remote-endpoint = <&mipi1_sensor_ep>;
+				data-lanes = <1 2>;
+				clocks-lanes = <0>;
 			};
 		};
 	};
+
 	goodix_ts@5d {
 		compatible = "goodix,gt911";
 		reg = <0x5d>;
@@ -294,4 +358,17 @@
 		spi-max-frequency = <80000000>;
 		spi-nor,ddr-quad-read-dummy = <6>;
 	};
+};
+
+&usdhc2 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+	wp-gpios = <&gpio2 20 GPIO_ACTIVE_HIGH>;
+	no-1-8-v;
+	bus-width = <4>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
+	status = "okay";
 };

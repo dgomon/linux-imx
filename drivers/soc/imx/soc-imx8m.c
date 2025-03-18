@@ -116,53 +116,34 @@ static void __init imx8mm_soc_uid(void)
 	u32 offset = of_machine_is_compatible("fsl,imx8mp") ?
 		     IMX8MP_OCOTP_UID_OFFSET : 0;
 
-	pr_info("imx8mm_soc_uid 1\n");
-
 	np = of_find_compatible_node(NULL, NULL, "fsl,imx8mm-ocotp");
-	if (!np) {
-		pr_info("imx8mm_soc_uid 2\n");
+	if (!np)
 		return;
-	}
-
-	pr_info("imx8mm_soc_uid 3\n");
 
 	ocotp_base = of_iomap(np, 0);
 	WARN_ON(!ocotp_base);
-
-	pr_info("imx8mm_soc_uid 4\n");
-	pr_info("getting clock: %s\n", np->name);
 	clk = of_clk_get_by_name(np, NULL);
 	if (IS_ERR(clk)) {
 		WARN_ON(IS_ERR(clk));
 		return;
 	}
-	else {
-		pr_info("got clock: %s\n", np->name);
-	}
 
-	pr_info("imx8mm_soc_uid 5\n");
 	clk_prepare_enable(clk);
 
-	pr_info("imx8mm_soc_uid 6\n");
 	soc_uid = readl_relaxed(ocotp_base + OCOTP_UID_HIGH + offset);
 	soc_uid <<= 32;
 	soc_uid |= readl_relaxed(ocotp_base + OCOTP_UID_LOW + offset);
 
 	if (offset) {
-		pr_info("imx8mm_soc_uid 7\n");
 		soc_uid_h = readl_relaxed(ocotp_base + IMX8MP_OCOTP_UID_HIGH + 0x10);
 		soc_uid_h <<= 32;
 		soc_uid_h |= readl_relaxed(ocotp_base + IMX8MP_OCOTP_UID_HIGH);
 	}
-	pr_info("imx8mm_soc_uid 8\n");
 
 	clk_disable_unprepare(clk);
-	pr_info("imx8mm_soc_uid 9\n");
 	clk_put(clk);
 
-	pr_info("imx8mm_soc_uid 10\n");
 	iounmap(ocotp_base);
-	pr_info("imx8mm_soc_uid 11\n");
 	of_node_put(np);
 }
 

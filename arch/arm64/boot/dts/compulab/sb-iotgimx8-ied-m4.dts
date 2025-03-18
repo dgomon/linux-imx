@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 CopuLab Ltd.
+ * Copyright (C) 2021 CompuLab Ltd.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -8,25 +8,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
 
-/dts-v1/;
-
-#include "../freescale/imx8mm.dtsi"
-#include "../freescale/imx8mm-pinfunc.h"
-#include "sb-ucm-imx8-rev2.dtsi"
-#include "ucm-imx8m-mini.dtsi"
-
-/ {
-	model = "CompuLab UCM i.MX8MM board M4 Kernel 1";
-	compatible = "cpl,ucm-imx8m-mini", "fsl,imx8mm";
-};
-
-&uart1 {
-	status = "disabled";
-};
+#include "sb-iotgimx8-ied.dts"
 
 / {
 	reserved-memory {
@@ -51,6 +37,11 @@
 			no-map;
 		};
 
+		rsc_table: rsc_table@b80ff000 {
+			reg = <0 0xb80ff000 0 0x1000>;
+			no-map;
+		};
+
 		vdevbuffer: vdevbuffer@b8400000 {
 			compatible = "shared-dma-pool";
 			reg = <0 0xb8400000 0 0x100000>;
@@ -66,18 +57,7 @@
 		mboxes = <&mu 0 1
 			  &mu 1 1
 			  &mu 3 1>;
-		memory-region = <&vdev0vring0>, <&vdev0vring1>, <&vdevbuffer>;
+		memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>, <&rsc_table>;
 		syscon = <&src>;
 	};
-};
-
-&rpmsg{
-	/*
-	 * 64K for one rpmsg instance:
-	 * --0xb8000000~0xb800ffff: pingpong
-	 */
-	vdev-nums = <1>;
-	reg = <0x0 0xb8000000 0x0 0x10000>;
-	memory-region = <&vdevbuffer>;
-	status = "disabled";
 };

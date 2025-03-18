@@ -1139,7 +1139,7 @@ static int busfreq_probe(struct platform_device *pdev)
 			|| IS_ERR(periph_pre_clk) || IS_ERR(periph_clk2_clk)
 			|| IS_ERR(periph_clk2_sel_clk)) {
 			dev_err(busfreq_dev,
-				"%s: failed to get busfreq clk 1\n", __func__);
+				"%s: failed to get busfreq clk\n", __func__);
 			return -EINVAL;
 		}
 	}
@@ -1151,7 +1151,7 @@ static int busfreq_probe(struct platform_device *pdev)
 		if (IS_ERR(axi_alt_sel_clk) || IS_ERR(axi_sel_clk)
 			|| IS_ERR(pll3_pfd1_540m_clk)) {
 			dev_err(busfreq_dev,
-				"%s: failed to get busfreq clk 2\n", __func__);
+				"%s: failed to get busfreq clk\n", __func__);
 			return -EINVAL;
 		}
 	}
@@ -1248,7 +1248,7 @@ static int busfreq_probe(struct platform_device *pdev)
 			|| IS_ERR(ahb_clk) || IS_ERR(axi_clk)
 			|| IS_ERR(pfd2_270m)) {
 			dev_err(busfreq_dev,
-				"%s: failed to get busfreq clk 3\n", __func__);
+				"%s: failed to get busfreq clk\n", __func__);
 			return -EINVAL;
 		}
 	}
