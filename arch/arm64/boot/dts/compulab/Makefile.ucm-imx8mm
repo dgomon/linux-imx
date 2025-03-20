@@ -1,7 +1,4 @@
 # i.MX8M-mini
 dtb-$(CONFIG_SOC_IMX8M) += ucm-imx8m-mini.dtb
 dtb-$(CONFIG_SOC_IMX8M) += ucm-imx8m-mini-thermal.dtb
-dtb-$(CONFIG_SOC_IMX8M) += mcm-imx8m-mini.dtb
-dtb-$(CONFIG_SOC_IMX8M) += mcm-imx8m-mini-m4.dtb
 dtb-$(CONFIG_SOC_IMX8M) += ucm-imx8m-mini-rev1.4.dtb
-dtb-$(CONFIG_SOC_IMX8M) += mcm-imx8m-mini-thermal.dtb
