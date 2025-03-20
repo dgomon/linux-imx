@@ -1,7 +1,0 @@
-&cpu_alert {
-	temperature = <120000>;
-};
-
-&cpu_crit {
-	temperature = <160000>;
-};

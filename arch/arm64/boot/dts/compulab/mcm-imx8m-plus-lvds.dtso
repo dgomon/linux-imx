@@ -1,2 +1,0 @@
-#include "overlay.h"
-#include "mcm-imx8m-plus-lvds.dtsi"
